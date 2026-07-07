@@ -1,70 +1,114 @@
-# Getting Started with Create React App
+# TextilIA — Asistente de Inventario para MYPE Textil
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Sistema de gestión de inventario inteligente con chat en lenguaje natural, informes automáticos a Google Sheets y formularios de registro de datos.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## 🧩 Tecnologías utilizadas
 
-### `npm start`
+| Capa | Tecnología |
+|------|-----------|
+| Frontend | React (Vite) + JavaScript |
+| Orquestación | n8n (automatización de flujos) |
+| Base de datos | MySQL 8+ |
+| Inteligencia artificial | Google Gemini 2.5 Flash |
+| Exportación de informes | Google Sheets API |
+| Despliegue | Vercel (frontend) / Railway (n8n) |
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+---
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 📁 Estructura del repositorio
 
-### `npm test`
+```
+inventario-textil/
+├── src/
+│   └── App.js              # Frontend principal (React)
+├── flujo-n8n.json          # Flujo exportado de n8n
+├── database.sql            # Script de creación de tablas y datos de ejemplo
+├── .env.example            # Variables de entorno necesarias
+└── README.md
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+## ⚙️ Instalación y configuración
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### 1. Base de datos MySQL
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```bash
+mysql -u root -p < database.sql
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Esto crea la base de datos `inventario_textil` con todas las tablas y datos de ejemplo.
 
-### `npm run eject`
+### 2. Frontend React
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```bash
+npm install
+npm run dev
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Abre `http://localhost:5173` en tu navegador.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### 3. n8n
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+1. Instala n8n: `npm install -g n8n`
+2. Inicia n8n: `n8n start`
+3. Abre `http://localhost:5678`
+4. Importa el archivo `flujo-n8n.json` (menú → Import workflow)
+5. Configura las credenciales de MySQL y Google Sheets dentro de n8n
 
-## Learn More
+---
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## 🔑 Variables de entorno
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Crea un archivo `.env` en la raíz del proyecto basándote en `.env.example`:
 
-### Code Splitting
+```env
+VITE_N8N_CHAT_URL=http://localhost:5678/webhook/TU_WEBHOOK_ID/chat
+VITE_N8N_DB_URL=http://localhost:5678/webhook/inventario-db
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+---
 
-### Analyzing the Bundle Size
+## 💬 Funcionalidades del chat
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+El asistente responde preguntas en lenguaje natural como:
 
-### Making a Progressive Web App
+- *"¿Qué productos tienen stock bajo?"*
+- *"¿Cuáles son los productos más vendidos?"*
+- *"Dame un informe general del inventario"*
+- *"¿Qué materia prima está por agotarse?"*
+- *"¿Cuál es el producto más rentable?"*
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+Cada consulta genera automáticamente un informe en Google Sheets.
 
-### Advanced Configuration
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+## 📋 Módulos de registro
 
-### Deployment
+| Pestaña | Descripción |
+|---------|-------------|
+| 📦 Productos | Registrar productos terminados |
+| 🧵 Materias Primas | Registrar insumos |
+| 💰 Ventas | Registrar cabecera de venta |
+| 🧾 Detalle Venta | Registrar productos por venta |
+| 👥 Clientes | Registrar clientes |
+| 🏭 Proveedores | Registrar proveedores |
+| 🛒 Compras MP | Registrar reposición de materias primas |
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+---
 
-### `npm run build` fails to minify
+## 🗄️ Modelo de base de datos
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```
+clientes ──< ventas ──< detalle_ventas >── productos
+proveedores ──< materias_primas
+proveedores ──< compras_materia_prima >── materias_primas
+```
+
+---
+
+## 👤 Autor
+
+Proyecto desarrollado como parte de trabajo de investigación para la gestión de inventarios en MYPE textil peruana.
